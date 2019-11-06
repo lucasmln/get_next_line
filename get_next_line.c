@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 
-size_t		ft_strlen(const char *s)
+size_t	ft_strlen(const char *s)
 {
 	size_t len;
 
@@ -13,7 +13,7 @@ size_t		ft_strlen(const char *s)
 		len++;
 	return (len);
 }
-
+/*
 char	*ft_strchr(const char *s, int c)
 {
 	char	*pos;
@@ -29,8 +29,8 @@ char	*ft_strchr(const char *s, int c)
 	}
 	return (pos);
 }
-
-char *ft_realloc(char *s1, char *s2)
+*/
+char	*ft_realloc(char *s1, char *s2)
 {
 	char	*new;
 	int		i;
@@ -57,51 +57,51 @@ char *ft_realloc(char *s1, char *s2)
 	return (new);
 }
 
-int	get_next_line(int fd, char **line)
+int		get_char(int fd, char **line, char *buf)
+{
+	int		ret;
+
+	ret = read(fd, buf, BUFFER_SIZE - BUFFER_SIZE + 1);
+	if (ret == 0)
+		return (0);
+	if (buf[0] == '\n')
+		return (1);
+	buf[1] = '\0';
+	*line = ft_realloc(*line, buf);
+	return (2);
+}
+
+int		get_next_line(int fd, char **line)
 {
 	int			ret;
 	char		buf[BUFFER_SIZE - BUFFER_SIZE + 2];
 
-	*line = NULL;
+	if (fd < 0 || !(*line = malloc(sizeof(char) * 1)))
+		return (-1);
+	*line[0] = '\0';
 	if ((ret = read(fd, buf, BUFFER_SIZE - BUFFER_SIZE + 1)) == -1)
 		return (-1);
+	if (ret == 0)
+		return (0);
 	buf[1] = '\0';
 	if (buf[0] == '\n')
 		return (1);
 	*line = ft_realloc(*line, buf);
-	while((ret = read(fd, buf, BUFFER_SIZE - BUFFER_SIZE + 1) != 0  &&
-			(buf[0] != '\n' && buf[0] != '\0')))
-	{
-		buf[1] = '\0';
-		*line = ft_realloc(*line, buf);
-	}
-	buf[1] = '\0';
-	if (buf[0] == '\0')
-		return (0);
-	else
-		return (1);
+	while((ret = get_char(fd, line, buf)) == 2)
+		;
+	return (ret);
 }
 /*
-int		main(int ac, char **av)
+int main(int argc, const char *argv[])
 {
-	int		fd;
-	int		ret;
-	char	*line;
+//	int		fd = open(argv[1], O_RDONLY);
+	char	*line = NULL;
+	int		ret = 1;
 
-	while (--ac)
+	while (ret > 0)
 	{
-		av++;
-		if ((fd = open(*av, O_RDONLY)) < 0)
-			fd = 0;
-		while ((ret = (get_next_line(fd, &line))) == 1)
-		{
-			printf("line : %s\n", line);
-		//	free(line);
-			printf("ret : %d\n", ret);
-		}
-	//	free(line);
-		printf("line : %s\n", line);
-		printf("%d\n", ret);
+	ret = get_next_line(0, &line);
+	printf("ret = %d\n", ret);
 	}
-	return (0);
+	return 0;
 }*/
